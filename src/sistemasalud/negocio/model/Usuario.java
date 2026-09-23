@@ -2,29 +2,23 @@ package sistemasalud.negocio.model;
 
 public class Usuario {
     private final String nombre;
-    private final String apellido;
-    private final int edad;
+    private final String contrasena;
     
-    public Usuario(String nombre, String apellido, int edad) {
+    public Usuario(String nombre, String contrasena) {
         this.nombre = nombre;
-        this.apellido = apellido;
-        this.edad = edad;
+        this.contrasena = contrasena;
     }
 
     public String getNombre() {
         return nombre;
     }
 
-    public String getApellido() {
-        return apellido;
-    }
-
-    public int getEdad() {
-        return edad;
+    public String getContrasena() {
+        return contrasena;
     }
 
     @Override
     public String toString() {
-        return "[Nombre: " + nombre + ", Apellido: " + apellido + ", Edad: " + edad + "]";
+        return "[Nombre: " + nombre + ", Contraseña: " + contrasena + "]";
     }
 }

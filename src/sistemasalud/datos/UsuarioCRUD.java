@@ -19,10 +19,6 @@ public class UsuarioCRUD extends CRUD {
         return instance;
     }
     
-    public void addUsuario(Usuario user) throws IOException {
-        addRow(user.getNombre() + ";" + user.getApellido() + ";" + user.getEdad());
-    }
-    
     public ArrayList<Usuario> getUsuarios() {
         ArrayList<Usuario> usuarios = new ArrayList<>();
         
@@ -30,12 +26,11 @@ public class UsuarioCRUD extends CRUD {
             ArrayList<String[]> fullData = readFullData();
             
             fullData.stream().forEach((data) -> {
-                if (data.length == 3) {
+                if (data.length == 2) {
                     usuarios.add(
                             new Usuario(
                                     data[0],
-                                    data[1],
-                                    Integer.parseInt(data[2])
+                                    data[1]
                             )
                     );
                 }
@@ -47,11 +42,15 @@ public class UsuarioCRUD extends CRUD {
         return usuarios;
     }
     
+    public void addUsuario(Usuario user) throws IOException {
+        addRow(user.getNombre() + ";" + user.getContrasena());
+    }
+    
     public void removeUsuario(int index) throws IOException {
         removeRow(index);
     }
     
     public void updateUsuario(int index, Usuario user) throws IOException {
-        updateRow(index, user.getNombre() + ";" + user.getApellido() + ";" + user.getEdad());
+        updateRow(index, user.getNombre() + ";" + user.getContrasena());
     }
 }
