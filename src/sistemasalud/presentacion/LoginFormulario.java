@@ -3,9 +3,12 @@ package sistemasalud.presentacion;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import sistemasalud.datos.UsuarioCRUD;
+import sistemasalud.negocio.Login;
 import sistemasalud.negocio.model.Usuario;
 
 public class LoginFormulario extends javax.swing.JFrame {
+    private int intentos = 0;
+    
     /**
      * Creates new form LoginFormulario
      */
@@ -44,7 +47,7 @@ public class LoginFormulario extends javax.swing.JFrame {
 
         NombreField.setToolTipText("Nombre de usuario");
 
-        ContrasenaField.setToolTipText("********");
+        ContrasenaField.setToolTipText("Contraseña");
 
         jButton1.setText("Login");
         jButton1.addActionListener(this::jButton1ActionPerformed);
@@ -102,6 +105,9 @@ public class LoginFormulario extends javax.swing.JFrame {
         
         for (Usuario usuario : usuarios) {
             if (usuario.getNombre().equals(nombre) && usuario.getContrasena().equals(contrasena)) {
+                Login login = Login.getInstance();
+                login.iniciarSesion(usuario);
+                
                 dispose();
                 MenuFormulario formulario = new MenuFormulario();
                 formulario.setVisible(true);
@@ -111,7 +117,15 @@ public class LoginFormulario extends javax.swing.JFrame {
             }
         }
         
-        JOptionPane.showMessageDialog(rootPane, "Nombre de usuario o contraseña incorrectas", "Inicio de Sesión", JOptionPane.ERROR_MESSAGE);
+        intentos++;
+        if (intentos > 2) {
+            NombreField.setText("");
+            NombreField.setEditable(false);
+            ContrasenaField.setText("");
+            ContrasenaField.setEditable(false);
+            jButton1.setEnabled(false);
+        }
+        JOptionPane.showMessageDialog(rootPane, "Nombre de usuario o contraseña incorrectas (Intentos: " + intentos + "/3)", "Inicio de Sesión", JOptionPane.ERROR_MESSAGE);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

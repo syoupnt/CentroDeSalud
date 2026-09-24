@@ -16,6 +16,10 @@ public class Usuario {
     public String getContrasena() {
         return contrasena;
     }
+    
+    public boolean esAdmin() {
+        return nombre.equals("ADMIN") && contrasena.equals("ADMIN");
+    }
 
     @Override
     public String toString() {

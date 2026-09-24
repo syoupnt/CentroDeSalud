@@ -1,1 +1,8 @@
-syoupnt;test
+ADMIN;ADMIN
+Marcos;123
+Frank;contraseña
+Ricky;123456789
+Tilak;test123
+Carlos;2008
+
+a;a

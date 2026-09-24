@@ -107,7 +107,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="ContrasenaField">
       <Properties>
-        <Property name="toolTipText" type="java.lang.String" value="********"/>
+        <Property name="toolTipText" type="java.lang.String" value="Contrase&#xf1;a"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="jButton1">

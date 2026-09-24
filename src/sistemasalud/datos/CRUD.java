@@ -38,7 +38,7 @@ public class CRUD {
     }
     
     protected void addRow(String content) throws IOException {
-        Files.writeString(ruta, content, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        Files.writeString(ruta, System.lineSeparator() + content, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
     
     protected void removeRow(int index) throws IOException {
