@@ -13,28 +13,33 @@ import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.SwingConstants;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import sistemasalud.datos.UsuarioCRUD;
 import sistemasalud.negocio.Login;
 import sistemasalud.negocio.model.Usuario;
 
 public class LoginFormulario extends javax.swing.JFrame {
-    private int intentos = 0;
-
     private static final Color COLOR_PRIMARIO = new Color(20, 105, 111);
     private static final Color COLOR_TEXTO = new Color(37, 55, 62);
     private static final Color COLOR_SECUNDARIO = new Color(104, 124, 130);
 
-    /**
-     * Creates new form LoginFormulario
-     */
+    private final JLabel etiquetaBienvenida = new JLabel();
+    private final JLabel etiquetaUsuario = new JLabel();
+    private final JLabel etiquetaContrasena = new JLabel();
+    private final JTextField campoUsuario = new JTextField();
+    private final JPasswordField campoContrasena = new JPasswordField();
+    private final JButton botonIniciarSesion = new JButton();
+    private int intentosFallidos;
+
     public LoginFormulario() {
-        initComponents();
         configurarInterfaz();
     }
 
@@ -42,13 +47,8 @@ public class LoginFormulario extends javax.swing.JFrame {
         setTitle("Centro de Salud Ganimedes | Inicio de sesión");
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        JPanel fondo = new JPanel(new BorderLayout());
-        fondo.setBackground(new Color(239, 245, 246));
-        fondo.setBorder(new EmptyBorder(30, 30, 30, 30));
-
         JPanel tarjeta = new JPanel(new BorderLayout());
         tarjeta.setBackground(Color.WHITE);
-        tarjeta.setBorder(BorderFactory.createLineBorder(new Color(220, 230, 232)));
 
         JPanel marca = new JPanel();
         marca.setLayout(new BoxLayout(marca, BoxLayout.Y_AXIS));
@@ -98,11 +98,11 @@ public class LoginFormulario extends javax.swing.JFrame {
         formulario.add(sobreTitulo);
         formulario.add(Box.createVerticalStrut(10));
 
-        jLabel1.setText("Bienvenido");
-        jLabel1.setFont(new Font("SansSerif", Font.BOLD, 29));
-        jLabel1.setForeground(COLOR_TEXTO);
-        jLabel1.setAlignmentX(LEFT_ALIGNMENT);
-        formulario.add(jLabel1);
+        etiquetaBienvenida.setText("Bienvenido");
+        etiquetaBienvenida.setFont(new Font("SansSerif", Font.BOLD, 29));
+        etiquetaBienvenida.setForeground(COLOR_TEXTO);
+        etiquetaBienvenida.setAlignmentX(LEFT_ALIGNMENT);
+        formulario.add(etiquetaBienvenida);
         formulario.add(Box.createVerticalStrut(8));
 
         JLabel instrucciones = new JLabel("Ingresa tus datos para continuar.");
@@ -112,34 +112,35 @@ public class LoginFormulario extends javax.swing.JFrame {
         formulario.add(instrucciones);
         formulario.add(Box.createVerticalStrut(34));
 
-        estilizarEtiqueta(jLabel2, "Usuario");
-        formulario.add(jLabel2);
+        estilizarEtiqueta(etiquetaUsuario, "Usuario");
+        formulario.add(etiquetaUsuario);
         formulario.add(Box.createVerticalStrut(8));
-        estilizarCampo(NombreField);
-        NombreField.setToolTipText("Escribe tu nombre de usuario");
-        NombreField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
-        formulario.add(NombreField);
+        estilizarCampo(campoUsuario);
+        campoUsuario.setToolTipText("Escribe tu nombre de usuario");
+        campoUsuario.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
+        formulario.add(campoUsuario);
         formulario.add(Box.createVerticalStrut(20));
 
-        estilizarEtiqueta(jLabel3, "Contraseña");
-        formulario.add(jLabel3);
+        estilizarEtiqueta(etiquetaContrasena, "Contraseña");
+        formulario.add(etiquetaContrasena);
         formulario.add(Box.createVerticalStrut(8));
-        estilizarCampo(ContrasenaField);
-        ContrasenaField.setToolTipText("Escribe tu contraseña");
-        ContrasenaField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
-        formulario.add(ContrasenaField);
+        estilizarCampo(campoContrasena);
+        campoContrasena.setToolTipText("Escribe tu contraseña");
+        campoContrasena.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
+        formulario.add(campoContrasena);
         formulario.add(Box.createVerticalStrut(28));
 
-        jButton1.setText("Iniciar sesión");
-        jButton1.setFont(new Font("SansSerif", Font.BOLD, 15));
-        jButton1.setForeground(Color.WHITE);
-        jButton1.setBackground(COLOR_PRIMARIO);
-        jButton1.setBorder(BorderFactory.createEmptyBorder(13, 18, 13, 18));
-        jButton1.setFocusPainted(false);
-        jButton1.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        jButton1.setAlignmentX(LEFT_ALIGNMENT);
-        jButton1.setMaximumSize(new Dimension(Integer.MAX_VALUE, 48));
-        formulario.add(jButton1);
+        botonIniciarSesion.setText("Iniciar sesión");
+        botonIniciarSesion.setFont(new Font("SansSerif", Font.BOLD, 15));
+        botonIniciarSesion.setForeground(Color.WHITE);
+        botonIniciarSesion.setBackground(COLOR_PRIMARIO);
+        botonIniciarSesion.setBorder(BorderFactory.createEmptyBorder(13, 18, 13, 18));
+        botonIniciarSesion.setFocusPainted(false);
+        botonIniciarSesion.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        botonIniciarSesion.setAlignmentX(LEFT_ALIGNMENT);
+        botonIniciarSesion.setMaximumSize(new Dimension(Integer.MAX_VALUE, 48));
+        botonIniciarSesion.addActionListener(event -> iniciarSesion());
+        formulario.add(botonIniciarSesion);
 
         JLabel nota = new JLabel("Sistema de gestión del centro de salud");
         nota.setFont(new Font("SansSerif", Font.PLAIN, 12));
@@ -150,16 +151,14 @@ public class LoginFormulario extends javax.swing.JFrame {
 
         tarjeta.add(panelMarca, BorderLayout.WEST);
         tarjeta.add(formulario, BorderLayout.CENTER);
-        fondo.add(tarjeta, BorderLayout.CENTER);
-        setContentPane(fondo);
-        setMinimumSize(new Dimension(760, 500));
+        add(tarjeta);
         setSize(840, 560);
         setResizable(false);
         setLocationRelativeTo(null);
 
-        NombreField.addActionListener(event -> ContrasenaField.requestFocusInWindow());
-        ContrasenaField.addActionListener(event -> jButton1.doClick());
-        getRootPane().setDefaultButton(jButton1);
+        campoUsuario.addActionListener(event -> campoContrasena.requestFocusInWindow());
+        campoContrasena.addActionListener(event -> botonIniciarSesion.doClick());
+        getRootPane().setDefaultButton(botonIniciarSesion);
     }
 
     private void estilizarEtiqueta(JLabel etiqueta, String texto) {
@@ -173,9 +172,7 @@ public class LoginFormulario extends javax.swing.JFrame {
         campo.setFont(new Font("SansSerif", Font.PLAIN, 15));
         campo.setForeground(COLOR_TEXTO);
         campo.setBackground(new Color(250, 252, 252));
-        campo.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(211, 224, 226)),
-                BorderFactory.createEmptyBorder(8, 12, 8, 12)));
+        campo.setBorder(BorderFactory.createLineBorder(new Color(211, 224, 226)));
     }
 
     private static final class PanelDegradado extends JPanel {
@@ -220,89 +217,9 @@ public class LoginFormulario extends javax.swing.JFrame {
         }
     }
 
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        NombreField = new javax.swing.JTextField();
-        ContrasenaField = new javax.swing.JPasswordField();
-        jButton1 = new javax.swing.JButton();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Inicio de Sesión");
-        setResizable(false);
-
-        jLabel1.setFont(new java.awt.Font("Cascadia Code", 1, 24)); // NOI18N
-        jLabel1.setText("Iniciar Sesión");
-
-        jLabel2.setFont(new java.awt.Font("Cascadia Code", 0, 14)); // NOI18N
-        jLabel2.setText("Nombre:");
-
-        jLabel3.setFont(new java.awt.Font("Cascadia Code", 0, 14)); // NOI18N
-        jLabel3.setText("Contraseña:");
-
-        NombreField.setToolTipText("Nombre de usuario");
-
-        ContrasenaField.setToolTipText("Contraseña");
-
-        jButton1.setText("Iniciar sesión");
-        jButton1.addActionListener(this::jButton1ActionPerformed);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(133, 133, 133)
-                        .addComponent(jLabel1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jButton1)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel3))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(NombreField)
-                                    .addComponent(ContrasenaField, javax.swing.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))))))
-                .addContainerGap(21, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(NombreField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(ContrasenaField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(jButton1)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String nombre = NombreField.getText();
-        String contrasena = new String(ContrasenaField.getPassword());
+    private void iniciarSesion() {
+        String nombre = campoUsuario.getText();
+        String contrasena = new String(campoContrasena.getPassword());
         
         UsuarioCRUD usuarioCRUD = UsuarioCRUD.getInstance();
         ArrayList<Usuario> usuarios = usuarioCRUD.getUsuarios();
@@ -321,23 +238,14 @@ public class LoginFormulario extends javax.swing.JFrame {
             }
         }
         
-        intentos++;
-        if (intentos > 2) {
-            NombreField.setText("");
-            NombreField.setEditable(false);
-            ContrasenaField.setText("");
-            ContrasenaField.setEditable(false);
-            jButton1.setEnabled(false);
+        intentosFallidos++;
+        if (intentosFallidos > 2) {
+            campoUsuario.setText("");
+            campoUsuario.setEditable(false);
+            campoContrasena.setText("");
+            campoContrasena.setEditable(false);
+            botonIniciarSesion.setEnabled(false);
         }
-        JOptionPane.showMessageDialog(rootPane, "Nombre de usuario o contraseña incorrectas (Intentos: " + intentos + "/3)", "Inicio de Sesión", JOptionPane.ERROR_MESSAGE);
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPasswordField ContrasenaField;
-    private javax.swing.JTextField NombreField;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    // End of variables declaration//GEN-END:variables
+        JOptionPane.showMessageDialog(rootPane, "Nombre de usuario o contraseña incorrectas (Intentos: " + intentosFallidos + "/3)", "Inicio de Sesión", JOptionPane.ERROR_MESSAGE);
+    }
 }
