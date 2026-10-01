@@ -213,6 +213,13 @@ public class UsuariosFormulario extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        java.awt.Container ventanaInterna = javax.swing.SwingUtilities.getAncestorOfClass(
+                javax.swing.JInternalFrame.class, (java.awt.Component) evt.getSource());
+        if (ventanaInterna instanceof javax.swing.JInternalFrame) {
+            ((javax.swing.JInternalFrame) ventanaInterna).dispose();
+            return;
+        }
+
         dispose();
         MenuFormulario formulario = new MenuFormulario();
         formulario.setVisible(true);
