@@ -178,6 +178,7 @@ public class MenuFormulario extends JFrame {
         }
 
         Container contenido = formulario.getContentPane();
+        Dimension tamano = formulario.getSize();
         formulario.setContentPane(new JPanel());
         formulario.dispose();
 
@@ -185,8 +186,7 @@ public class MenuFormulario extends JFrame {
         ventana.putClientProperty("modulo", titulo);
         ventana.setContentPane(contenido);
         ventana.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-        ventana.setSize(escritorio.getSize());
-        ventana.setLocation(0, 0);
+        prepararVentanaInterna(ventana, tamano);
         escritorio.add(ventana);
         ventana.setVisible(true);
         try {
@@ -206,8 +206,7 @@ public class MenuFormulario extends JFrame {
                 + "<p>Esta sección estará disponible próximamente.</p></div></html>",
                 SwingConstants.CENTER);
         ventana.setContentPane(aviso);
-        ventana.setSize(escritorio.getSize());
-        ventana.setLocation(0, 0);
+        prepararVentanaInterna(ventana, new Dimension(620, 420));
         escritorio.add(ventana);
         ventana.setVisible(true);
         try {
@@ -215,6 +214,14 @@ public class MenuFormulario extends JFrame {
         } catch (java.beans.PropertyVetoException ex) {
             LOGGER.log(Level.WARNING, "No se pudo seleccionar la ventana interna.", ex);
         }
+    }
+
+    private void prepararVentanaInterna(JInternalFrame ventana, Dimension tamanoPreferido) {
+        Dimension areaDisponible = escritorio.getSize();
+        int ancho = tamanoPreferido.width;
+        int alto = tamanoPreferido.height;
+        ventana.setSize(ancho, alto);
+        ventana.setLocation((areaDisponible.width - ancho) / 2, (areaDisponible.height - alto) / 2);
     }
 
     private void cerrarSesion() {
