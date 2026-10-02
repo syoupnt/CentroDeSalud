@@ -18,7 +18,7 @@ Este proyecto está pensado para una clínica o centro de salud que necesita una
 - Java SE
 - Swing (GUI)
 - NetBeans IDE
-- Persistencia basada en archivos de texto en la carpeta `datos/`
+- Persistencia basada en archivos UTF-8 en la carpeta `datos/`
 
 ## Estructura del proyecto
 
@@ -71,6 +71,27 @@ Puede iniciar sesión con:
 
 - Usuario: `ADMIN`
 - Contraseña: `ADMIN`
+
+Los usuarios se almacenan como `nombre;contraseña`, un registro por línea.
+Las altas, modificaciones y eliminaciones reemplazan el archivo de forma
+atómica cuando el sistema de archivos lo permite. Los errores de lectura,
+registros inválidos e identificadores fuera de rango se muestran en la
+interfaz en lugar de tratarse como una lista vacía.
+
+## Datos de los módulos
+
+Personal, pacientes, citas y medicamentos también usan archivos UTF-8 en
+`datos/`, con un registro por línea y campos separados por punto y coma:
+
+- `personal.txt`: nombre, especialidad, teléfono y correo.
+- `pacientes.txt`: nombre, fecha de nacimiento, teléfono y dirección.
+- `citas.txt`: paciente, personal médico, fecha, hora y motivo.
+- `medicamentos.txt`: nombre, presentación, existencia e indicaciones.
+
+Desde cada formulario se pueden añadir, consultar, actualizar y eliminar
+registros. El ID mostrado en la tabla empieza en 0 y corresponde a la posición
+del registro en el archivo. Todos los campos son obligatorios y no admiten
+punto y coma ni saltos de línea.
 
 ## Módulos principales
 

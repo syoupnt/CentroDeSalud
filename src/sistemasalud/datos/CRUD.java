@@ -1,8 +1,11 @@
 package sistemasalud.datos;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,46 +14,99 @@ public class CRUD {
     private final Path ruta;
     
     public CRUD(String archivoNombre) {
-        ruta = Path.of(archivoNombre);
+        if (archivoNombre == null || archivoNombre.isBlank()) {
+            throw new IllegalArgumentException("El nombre del archivo no puede estar vacío.");
+        }
+        ruta = Path.of(archivoNombre).toAbsolutePath().normalize();
     }
     
-    protected ArrayList<String[]> readFullData() throws IOException {
-        List<String> data = Files.readAllLines(ruta);
+    protected synchronized ArrayList<String[]> readFullData() throws IOException {
+        List<String> data = leerLineas();
         ArrayList<String[]> finalData = new ArrayList<>();
         
-        for (String obj_data : data) {
-            String[] properties = obj_data.split(";");
-            finalData.add(properties);
+        for (String linea : data) {
+            if (!linea.isBlank()) {
+                finalData.add(linea.split(";", -1));
+            }
         }
         
         return finalData;
     }
     
-    protected void updateRow(int index, String content) throws IOException {
-        List<String> lineas = Files.readAllLines(ruta);
-        ArrayList<String> lineasMod = new ArrayList<>();
-        
-        for (int i = 0; i < lineas.size(); i++) {
-            lineasMod.add(i == index ? content : lineas.get(i));
+    protected synchronized void updateRow(int index, String content) throws IOException {
+        validarContenido(content);
+        List<String> lineas = leerLineas();
+        validarIndice(index, lineas.size());
+        lineas.set(index, content);
+        escribirLineas(lineas);
+    }
+    
+    protected synchronized void addRow(String content) throws IOException {
+        validarContenido(content);
+        List<String> lineas = leerLineas();
+        lineas.add(content);
+        escribirLineas(lineas);
+    }
+    
+    protected synchronized void removeRow(int index) throws IOException {
+        List<String> lineas = leerLineas();
+        validarIndice(index, lineas.size());
+        lineas.remove(index);
+        escribirLineas(lineas);
+    }
+
+    private List<String> leerLineas() throws IOException {
+        Path directorio = ruta.getParent();
+        if (directorio != null) {
+            Files.createDirectories(directorio);
         }
-        
-        Files.write(ruta, lineasMod);
-    }
-    
-    protected void addRow(String content) throws IOException {
-        Files.writeString(ruta, System.lineSeparator() + content, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-    }
-    
-    protected void removeRow(int index) throws IOException {
-        List<String> lineas = Files.readAllLines(ruta);
-        ArrayList<String> lineasMod = new ArrayList<>();
-        
-        for (int i = 0; i < lineas.size(); i++) {
-            if (i != index) {
-                lineasMod.add(lineas.get(i));
+        if (Files.notExists(ruta)) {
+            try {
+                Files.createFile(ruta);
+            } catch (java.nio.file.FileAlreadyExistsException ex) {
+                // Another application instance created the file first.
             }
         }
-        
-        Files.write(ruta, lineasMod);
+        ArrayList<String> lineas = new ArrayList<>(
+                Files.readAllLines(ruta, StandardCharsets.UTF_8));
+        lineas.removeIf(String::isBlank);
+        return lineas;
+    }
+
+    private void escribirLineas(List<String> lineas) throws IOException {
+        String prefijoTemporal = ruta.getFileName().toString();
+        if (prefijoTemporal.length() < 3) {
+            prefijoTemporal = (prefijoTemporal + "___").substring(0, 3);
+        }
+        Path temporal = Files.createTempFile(ruta.getParent(), prefijoTemporal, ".tmp");
+        try {
+            Files.write(temporal, lineas, StandardCharsets.UTF_8,
+                    StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+            try {
+                Files.move(temporal, ruta,
+                        StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException ex) {
+                Files.move(temporal, ruta, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(temporal);
+        }
+    }
+
+    private void validarContenido(String content) {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("El registro no puede estar vacío.");
+        }
+        if (content.indexOf('\n') >= 0 || content.indexOf('\r') >= 0) {
+            throw new IllegalArgumentException("El registro debe ocupar una sola línea.");
+        }
+    }
+
+    private void validarIndice(int index, int cantidad) {
+        if (index < 0 || index >= cantidad) {
+            String rango = cantidad == 0 ? "No hay registros para modificar."
+                    : "El ID debe estar entre 0 y " + (cantidad - 1) + ".";
+            throw new IndexOutOfBoundsException(rango);
+        }
     }
 }

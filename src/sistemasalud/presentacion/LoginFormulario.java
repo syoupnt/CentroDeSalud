@@ -9,6 +9,7 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -222,7 +223,16 @@ public class LoginFormulario extends javax.swing.JFrame {
         String contrasena = new String(campoContrasena.getPassword());
         
         UsuarioCRUD usuarioCRUD = UsuarioCRUD.getInstance();
-        ArrayList<Usuario> usuarios = usuarioCRUD.getUsuarios();
+        ArrayList<Usuario> usuarios;
+        try {
+            usuarios = usuarioCRUD.getUsuarios();
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "No se pudieron cargar los usuarios: " + ex.getMessage(),
+                    "Error de datos",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         
         for (Usuario usuario : usuarios) {
             if (usuario.getNombre().equals(nombre) && usuario.getContrasena().equals(contrasena)) {

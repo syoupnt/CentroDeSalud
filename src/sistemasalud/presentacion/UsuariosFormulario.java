@@ -5,6 +5,7 @@ package sistemasalud.presentacion;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import sistemasalud.datos.UsuarioCRUD;
 import sistemasalud.negocio.model.Usuario;
@@ -22,12 +23,16 @@ public class UsuariosFormulario extends javax.swing.JFrame {
         modelo = (DefaultTableModel) jTable1.getModel();
         crud = UsuarioCRUD.getInstance();
         
-        updateTable();
+        try {
+            updateTable();
+        } catch (IOException ex) {
+            mostrarError(ex);
+        }
     }
     
-    private void updateTable() {
-        modelo.setRowCount(0);
+    private void updateTable() throws IOException {
         ArrayList<Usuario> usuarios = crud.getUsuarios();
+        modelo.setRowCount(0);
         
         for (int i = 0; i < usuarios.size(); i++) {
             Usuario usuario = usuarios.get(i);
@@ -224,11 +229,11 @@ public class UsuariosFormulario extends javax.swing.JFrame {
                     addContrasenaField.getText()
             ));
             updateTable();
-        } catch (IOException ex) {
-            System.getLogger(UsuariosFormulario.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            addNombreField.setText("");
+            addContrasenaField.setText("");
+        } catch (IOException | IllegalArgumentException ex) {
+            mostrarError(ex);
         }
-        addNombreField.setText("");
-        addContrasenaField.setText("");
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
@@ -236,11 +241,10 @@ public class UsuariosFormulario extends javax.swing.JFrame {
             int id = Integer.parseInt(deleteIDField.getText());
             crud.removeUsuario(id);
             updateTable();
-        } catch (IOException ex) {
-            System.getLogger(UsuariosFormulario.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            deleteIDField.setText("");
+        } catch (IOException | IllegalArgumentException | IndexOutOfBoundsException ex) {
+            mostrarError(ex);
         }
-        
-        deleteIDField.setText("");
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
@@ -254,13 +258,20 @@ public class UsuariosFormulario extends javax.swing.JFrame {
                     )
             );
             updateTable();
-        } catch (IOException ex) {
-            System.getLogger(UsuariosFormulario.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            updateIDField.setText("");
+            updateNombreField.setText("");
+            updateContrasenaField.setText("");
+        } catch (IOException | IllegalArgumentException | IndexOutOfBoundsException ex) {
+            mostrarError(ex);
         }
-        updateIDField.setText("");
-        updateNombreField.setText("");
-        updateContrasenaField.setText("");
     }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void mostrarError(Exception ex) {
+        JOptionPane.showMessageDialog(this,
+                "No se pudo completar la operación: " + ex.getMessage(),
+                "Error de datos",
+                JOptionPane.ERROR_MESSAGE);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField addContrasenaField;

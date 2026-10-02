@@ -5,40 +5,33 @@ import java.util.ArrayList;
 import sistemasalud.negocio.model.Usuario;
 
 public class UsuarioCRUD extends CRUD {
-    private static UsuarioCRUD instance = null;
+    private static final UsuarioCRUD INSTANCE = new UsuarioCRUD();
     
     private UsuarioCRUD() {
         super("datos/usuarios.txt");
     }
     
     public static UsuarioCRUD getInstance() {
-        if (instance == null) {
-            instance = new UsuarioCRUD();
-        }
-        
-        return instance;
+        return INSTANCE;
     }
     
-    public ArrayList<Usuario> getUsuarios() {
+    public ArrayList<Usuario> getUsuarios() throws IOException {
         ArrayList<Usuario> usuarios = new ArrayList<>();
-        
-        try {
-            ArrayList<String[]> fullData = readFullData();
-            
-            fullData.stream().forEach((data) -> {
-                if (data.length == 2) {
-                    usuarios.add(
-                            new Usuario(
-                                    data[0],
-                                    data[1]
-                            )
-                    );
-                }
-            });
-        } catch (IOException ex) {
-            System.getLogger(UsuarioCRUD.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        ArrayList<String[]> fullData = readFullData();
+
+        for (int i = 0; i < fullData.size(); i++) {
+            String[] data = fullData.get(i);
+            if (data.length != 2) {
+                throw new IOException("El registro " + (i + 1)
+                        + " de usuarios.txt debe contener nombre y contraseña.");
+            }
+            try {
+                usuarios.add(new Usuario(data[0], data[1]));
+            } catch (IllegalArgumentException ex) {
+                throw new IOException("El registro " + (i + 1)
+                        + " de usuarios.txt contiene datos inválidos.", ex);
+            }
         }
-        
         return usuarios;
     }
     
