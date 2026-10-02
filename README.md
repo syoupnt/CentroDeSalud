@@ -91,7 +91,12 @@ Personal, pacientes, citas y medicamentos también usan archivos UTF-8 en
 Desde cada formulario se pueden añadir, consultar, actualizar y eliminar
 registros. El ID mostrado en la tabla empieza en 0 y corresponde a la posición
 del registro en el archivo. Todos los campos son obligatorios y no admiten
-punto y coma ni saltos de línea.
+punto y coma ni saltos de línea. Las fechas se seleccionan con un control de
+fecha y se guardan como `AAAA-MM-DD`; las horas se seleccionan con un control
+de hora y se guardan como `HH:mm`. En las citas, paciente y personal médico
+se eligen de menús desplegables que se actualizan con los registros guardados;
+las opciones muestran el ID y el nombre, y se conserva el nombre como valor
+para mantener la compatibilidad con citas existentes.
 
 ## Módulos principales
 
