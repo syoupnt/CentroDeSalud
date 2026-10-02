@@ -120,7 +120,7 @@ public class MenuFormulario extends JFrame {
         navegacion.add(crearBotonModulo("Personal médico", TipoIcono.PERSONAL,
                 evento -> abrirFormulario("Personal médico", new PersonalFormulario())));
         navegacion.add(crearBotonModulo("Medicamentos", TipoIcono.MEDICAMENTOS,
-                evento -> abrirAvisoModulo("Medicamentos")));
+                evento -> abrirFormulario("Medicamentos", new MedicamentosFormulario())));
         navegacion.add(crearBotonModulo("Pacientes", TipoIcono.PACIENTES,
                 evento -> abrirFormulario("Pacientes", new PacientesFormulario())));
         navegacion.add(crearBotonModulo("Citas", TipoIcono.CITAS,
@@ -206,26 +206,6 @@ public class MenuFormulario extends JFrame {
         ventana.setContentPane(contenido);
         ventana.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
         prepararVentanaInterna(ventana, tamano);
-        escritorio.add(ventana);
-        ventana.setVisible(true);
-        try {
-            ventana.setSelected(true);
-        } catch (java.beans.PropertyVetoException ex) {
-            LOGGER.log(Level.WARNING, "No se pudo seleccionar la ventana interna.", ex);
-        }
-    }
-
-    private void abrirAvisoModulo(String modulo) {
-        JInternalFrame ventana = new JInternalFrame(modulo, false, true, false, true);
-        ventana.putClientProperty("modulo", modulo);
-        ventana.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-
-        JLabel aviso = new JLabel("<html><div style='text-align:center'>"
-                + "<h2>Módulo de " + modulo + "</h2>"
-                + "<p>Esta sección estará disponible próximamente.</p></div></html>",
-                SwingConstants.CENTER);
-        ventana.setContentPane(aviso);
-        prepararVentanaInterna(ventana, new Dimension(620, 420));
         escritorio.add(ventana);
         ventana.setVisible(true);
         try {
