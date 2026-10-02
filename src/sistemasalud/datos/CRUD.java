@@ -1,6 +1,7 @@
 package sistemasalud.datos;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
@@ -17,7 +18,25 @@ public class CRUD {
         if (archivoNombre == null || archivoNombre.isBlank()) {
             throw new IllegalArgumentException("El nombre del archivo no puede estar vacío.");
         }
-        ruta = Path.of(archivoNombre).toAbsolutePath().normalize();
+        ruta = resolverRutaDatos().resolve(archivoNombre).toAbsolutePath().normalize();
+    }
+
+    private static Path resolverRutaDatos() {
+        try {
+            Path ubicacion = Path.of(CRUD.class.getProtectionDomain()
+                    .getCodeSource().getLocation().toURI());
+            Path directorioBase = Files.isDirectory(ubicacion)
+                    ? Path.of(System.getProperty("user.dir"))
+                    : ubicacion.getParent();
+            if (directorioBase == null) {
+                throw new IllegalStateException(
+                        "No se pudo determinar el directorio de la aplicación.");
+            }
+            return directorioBase;
+        } catch (URISyntaxException ex) {
+            throw new IllegalStateException(
+                    "No se pudo determinar la ubicación de la aplicación.", ex);
+        }
     }
     
     protected synchronized ArrayList<String[]> readFullData() throws IOException {

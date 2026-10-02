@@ -59,7 +59,10 @@ java -jar dist/SistemaSalud.jar
 
 ## Credenciales por defecto
 
-El sistema incluye usuarios predefinidos en `datos/usuarios.txt`.
+Los datos se guardan en una carpeta `datos/` junto al JAR; si no existe, se
+crea automáticamente al iniciar el acceso a los archivos. Al ejecutar desde
+NetBeans, se usa la carpeta de trabajo del proyecto. El sistema incluye
+usuarios predefinidos en `datos/usuarios.txt`.
 
 Ejemplo:
 
