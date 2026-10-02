@@ -32,6 +32,9 @@ public class MenuFormulario extends JFrame {
     private static final Logger LOGGER = Logger.getLogger(MenuFormulario.class.getName());
     private static final Color COLOR_PRIMARIO = new Color(24, 105, 105);
     private static final Color COLOR_FONDO = new Color(239, 246, 246);
+    private static final Color COLOR_FONDO_NAVEGACION = new Color(248, 251, 251);
+    private static final Color COLOR_HOVER_NAVEGACION = new Color(229, 240, 240);
+    private static final Dimension TAMANO_BOTON_MODULO = new Dimension(112, 78);
 
     private final JDesktopPane escritorio = new JDesktopPane();
 
@@ -112,7 +115,7 @@ public class MenuFormulario extends JFrame {
 
         JToolBar navegacion = new JToolBar();
         navegacion.setFloatable(false);
-        navegacion.setBackground(new Color(248, 251, 251));
+        navegacion.setBackground(COLOR_FONDO_NAVEGACION);
         navegacion.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(232, 239, 239)));
         navegacion.add(crearBotonModulo("Personal médico", TipoIcono.PERSONAL,
                 evento -> abrirFormulario("Personal médico", new PersonalFormulario())));
@@ -137,10 +140,26 @@ public class MenuFormulario extends JFrame {
         boton.setHorizontalTextPosition(SwingConstants.CENTER);
         boton.setFont(new Font("SansSerif", Font.PLAIN, 12));
         boton.setForeground(new Color(47, 72, 76));
-        boton.setBackground(new Color(248, 251, 251));
+        boton.setBackground(COLOR_FONDO_NAVEGACION);
+        boton.setOpaque(true);
         boton.setFocusPainted(false);
         boton.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
-        boton.setPreferredSize(new Dimension(112, 78));
+        boton.setMinimumSize(TAMANO_BOTON_MODULO);
+        boton.setPreferredSize(TAMANO_BOTON_MODULO);
+        boton.setMaximumSize(TAMANO_BOTON_MODULO);
+        boton.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evento) {
+                if (boton.isEnabled()) {
+                    boton.setBackground(COLOR_HOVER_NAVEGACION);
+                }
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evento) {
+                boton.setBackground(COLOR_FONDO_NAVEGACION);
+            }
+        });
         boton.addActionListener(accion);
         return boton;
     }
