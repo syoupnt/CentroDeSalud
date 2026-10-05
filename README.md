@@ -61,10 +61,9 @@ java -jar dist/SistemaSalud.jar
 
 Los datos se guardan en una carpeta `datos/` junto al JAR; si no existe, se
 crea automáticamente al iniciar el acceso a los archivos. Al ejecutar desde
-NetBeans, se usa la carpeta de trabajo del proyecto. El sistema incluye
-usuarios predefinidos en `datos/usuarios.txt`.
-
-Ejemplo:
+NetBeans, se usa la carpeta de trabajo del proyecto. En el primer inicio, si
+`datos/usuarios.txt` no existe o está vacío, el sistema crea automáticamente
+el usuario administrador:
 
 ```text
 ADMIN;ADMIN
@@ -75,7 +74,9 @@ Puede iniciar sesión con:
 - Usuario: `ADMIN`
 - Contraseña: `ADMIN`
 
-Los usuarios se almacenan como `nombre;contraseña`, un registro por línea.
+El usuario administrador predeterminado solo se agrega cuando no hay usuarios
+guardados; los archivos con usuarios existentes no se modifican. Los usuarios
+se almacenan como `nombre;contraseña`, un registro por línea.
 Las altas, modificaciones y eliminaciones reemplazan el archivo de forma
 atómica cuando el sistema de archivos lo permite. Los errores de lectura,
 registros inválidos e identificadores fuera de rango se muestran en la

@@ -15,7 +15,14 @@ public class UsuarioCRUD extends CRUD {
         return INSTANCE;
     }
     
-    public ArrayList<Usuario> getUsuarios() throws IOException {
+    public synchronized void inicializarUsuarioPredeterminado() throws IOException {
+        if (readFullData().isEmpty()) {
+            addUsuario(new Usuario("ADMIN", "ADMIN"));
+        }
+    }
+
+    public synchronized ArrayList<Usuario> getUsuarios() throws IOException {
+        inicializarUsuarioPredeterminado();
         ArrayList<Usuario> usuarios = new ArrayList<>();
         ArrayList<String[]> fullData = readFullData();
 
