@@ -1,120 +1,141 @@
 # Sistema de Gestión del Centro de Salud Ganimedes
 
-Aplicación de escritorio desarrollada en Java Swing para gestionar la administración de un centro de salud. El sistema permite controlar accesos, usuarios, personal médico, pacientes, citas y módulos de gestión con una interfaz moderna y funcional.
+Aplicación de escritorio desarrollada con Java y Swing para administrar
+información básica de un centro de salud. Incluye inicio de sesión y módulos
+para gestionar personal médico, pacientes, citas, medicamentos y usuarios.
 
-## Descripción general
+> **Aviso:** es una aplicación de ejemplo con persistencia local en archivos
+de texto. Los nombres de usuario y las contraseñas se almacenan sin cifrar;
+no uses datos personales o clínicos reales en un entorno no protegido.
 
-Este proyecto está pensado para una clínica o centro de salud que necesita una herramienta sencilla para manejar:
+## Funcionalidades
 
-- Inicio de sesión y control de accesos
-- Gestión de usuarios del sistema
-- Registro y administración de personal médico
-- Gestión de pacientes
-- Control de citas
-- Navegación por módulos desde un menú principal
+- Inicio y cierre de sesión. Tras tres intentos fallidos, el formulario de
+  inicio de sesión queda deshabilitado hasta reiniciar la aplicación.
+- Operaciones de alta, consulta, actualización y eliminación de personal,
+  pacientes, citas y medicamentos.
+- Administración de usuarios, disponible al iniciar sesión con la cuenta
+  administradora predeterminada.
+- En las citas, selección de pacientes y personal desde listas que se
+  actualizan con los registros existentes.
 
-## Tecnologías utilizadas
+Los campos de los módulos son:
 
-- Java SE
-- Swing (GUI)
-- NetBeans IDE
-- Persistencia basada en archivos UTF-8 en la carpeta `datos/`
+| Módulo | Campos |
+| --- | --- |
+| Personal médico | Nombre, especialidad, teléfono y correo |
+| Pacientes | Nombre, fecha de nacimiento, teléfono y dirección |
+| Citas | Paciente, personal médico, fecha, hora y motivo |
+| Medicamentos | Nombre, presentación, existencia e indicaciones |
+| Usuarios | Nombre y contraseña |
+
+## Tecnologías y requisitos
+
+- JDK 21 o posterior. El proyecto configura `javac.source` y `javac.target`
+  como `21` en `nbproject/project.properties`.
+- Apache Ant, incluido normalmente con NetBeans.
+- NetBeans IDE es opcional; el proyecto utiliza su estructura Java/Ant.
+- No requiere una base de datos ni dependencias externas configuradas.
+
+## Compilar, probar y ejecutar
+
+Ejecuta estos comandos desde la carpeta raíz del proyecto, donde se encuentra
+`build.xml`:
+
+```text
+ant compile
+ant test
+ant jar
+ant run
+```
+
+- `ant compile` compila las clases en `build/`.
+- `ant test` ejecuta las pruebas definidas en `test/`. Actualmente no hay
+  pruebas automatizadas en esa carpeta.
+- `ant jar` genera `dist/SistemaSalud.jar`.
+- `ant run` inicia la aplicación desde Ant.
+
+También puedes abrir la carpeta del proyecto en NetBeans y usar las acciones
+**Build**, **Test** y **Run**. La clase principal es
+`sistemasalud.SistemaSalud`.
+
+Para ejecutar el JAR compilado:
+
+```text
+java -jar dist/SistemaSalud.jar
+```
+
+## Inicio de sesión
+
+Si `datos/usuarios.txt` no existe o está vacío, al iniciar la aplicación se
+crea la cuenta predeterminada:
+
+```text
+Usuario: ADMIN
+Contraseña: ADMIN
+```
+
+Los usuarios existentes no se reemplazan. El módulo **Usuarios** solo está
+habilitado para una sesión cuyos datos sean exactamente `ADMIN` y `ADMIN`.
+Las contraseñas se guardan y se muestran en texto legible en los archivos y en
+la tabla de usuarios; protege el acceso al equipo y a esos archivos.
+
+## Persistencia y formato de los datos
+
+La aplicación guarda los registros en archivos UTF-8 dentro de `datos/`, con
+un registro por línea y campos separados por punto y coma (`;`). Los archivos
+se crean cuando se necesitan:
+
+| Archivo | Contenido por registro |
+| --- | --- |
+| `usuarios.txt` | Nombre de usuario; contraseña |
+| `personal.txt` | Nombre; especialidad; teléfono; correo |
+| `pacientes.txt` | Nombre; fecha de nacimiento; teléfono; dirección |
+| `citas.txt` | Paciente; personal médico; fecha; hora; motivo |
+| `medicamentos.txt` | Nombre; presentación; existencia; indicaciones |
+
+Los campos son obligatorios y no pueden contener punto y coma ni saltos de
+línea. Las fechas se guardan como `AAAA-MM-DD` y las horas como `HH:mm`.
+Paciente y personal médico se eligen de listas en el formulario de citas; la
+cita guarda sus nombres como referencias.
+
+El ID que muestran las tablas empieza en `0` y corresponde a la posición del
+registro en el archivo. Al eliminar un registro, las posiciones posteriores
+pueden cambiar. Las operaciones de escritura reemplazan el archivo de forma
+atómica cuando el sistema de archivos lo permite.
+
+La ubicación de `datos/` depende de cómo se inicie la aplicación:
+
+- Desde NetBeans o Ant, se usa la carpeta de trabajo actual, normalmente la
+  raíz del proyecto.
+- Desde el JAR, se usa una carpeta `datos/` junto al JAR; por ejemplo,
+  `dist/datos/` para `dist/SistemaSalud.jar`.
+
+Haz copias de seguridad de los archivos de datos antes de moverlos o editar
+su contenido.
 
 ## Estructura del proyecto
 
 ```text
 SistemaSalud/
-├── src/                 # Código fuente Java
-├── datos/               # Archivos de datos del sistema
-├── capturas/            # Capturas de pantalla del proyecto
-├── dist/                # Artefactos compilados y JAR
-├── build.xml            # Script de compilación de Ant
-├── manifest.mf          # Manifest del proyecto
-├── README.md            # Documentación del proyecto
-└── .gitignore
+├── src/sistemasalud/          # Punto de entrada de la aplicación
+│   ├── datos/                  # Persistencia y operaciones CRUD
+│   ├── negocio/                # Lógica de sesión y modelos
+│   └── presentacion/           # Formularios Swing
+├── test/                       # Pruebas automatizadas (vacío actualmente)
+├── datos/                      # Archivos locales de datos
+├── capturas/                   # Capturas de pantalla
+├── nbproject/                  # Configuración del proyecto NetBeans
+├── build.xml                   # Tareas de compilación de Ant
+└── manifest.mf                 # Manifest de la aplicación
 ```
 
-## Requisitos
-
-- Java JDK 8 o superior
-- NetBeans IDE (opcional, recomendado para abrir el proyecto)
-- Sistema operativo compatible con Java
-
-## Ejecución
-
-### Opción 1: Ejecutar el JAR compilado
-
-Desde la raíz del proyecto:
-
-```bash
-java -jar dist/SistemaSalud.jar
-```
-
-### Opción 2: Ejecutar desde NetBeans
-
-1. Abre el proyecto en NetBeans.
-2. Haz clic derecho sobre el proyecto.
-3. Selecciona `Run` o `Ejecutar`.
-4. La clase principal es `sistemasalud.SistemaSalud`.
-
-## Credenciales por defecto
-
-Los datos se guardan en una carpeta `datos/` junto al JAR; si no existe, se
-crea automáticamente al iniciar el acceso a los archivos. Al ejecutar desde
-NetBeans, se usa la carpeta de trabajo del proyecto. En el primer inicio, si
-`datos/usuarios.txt` no existe o está vacío, el sistema crea automáticamente
-el usuario administrador:
-
-```text
-ADMIN;ADMIN
-```
-
-Puede iniciar sesión con:
-
-- Usuario: `ADMIN`
-- Contraseña: `ADMIN`
-
-El usuario administrador predeterminado solo se agrega cuando no hay usuarios
-guardados; los archivos con usuarios existentes no se modifican. Los usuarios
-se almacenan como `nombre;contraseña`, un registro por línea.
-Las altas, modificaciones y eliminaciones reemplazan el archivo de forma
-atómica cuando el sistema de archivos lo permite. Los errores de lectura,
-registros inválidos e identificadores fuera de rango se muestran en la
-interfaz en lugar de tratarse como una lista vacía.
-
-## Datos de los módulos
-
-Personal, pacientes, citas y medicamentos también usan archivos UTF-8 en
-`datos/`, con un registro por línea y campos separados por punto y coma:
-
-- `personal.txt`: nombre, especialidad, teléfono y correo.
-- `pacientes.txt`: nombre, fecha de nacimiento, teléfono y dirección.
-- `citas.txt`: paciente, personal médico, fecha, hora y motivo.
-- `medicamentos.txt`: nombre, presentación, existencia e indicaciones.
-
-Desde cada formulario se pueden añadir, consultar, actualizar y eliminar
-registros. El ID mostrado en la tabla empieza en 0 y corresponde a la posición
-del registro en el archivo. Todos los campos son obligatorios y no admiten
-punto y coma ni saltos de línea. Las fechas se seleccionan con un control de
-fecha y se guardan como `AAAA-MM-DD`; las horas se seleccionan con un control
-de hora y se guardan como `HH:mm`. En las citas, paciente y personal médico
-se eligen de menús desplegables que se actualizan con los registros guardados;
-las opciones muestran el ID y el nombre, y se conserva el nombre como valor
-para mantener la compatibilidad con citas existentes.
-
-## Módulos principales
-
-- Personal médico: gestión del personal del centro
-- Pacientes: administración de pacientes
-- Citas: control de citas médicas
-- Usuarios: alta, edición, eliminación y consulta de usuarios
-
-## Capturas del sistema
+## Capturas
 
 ### Inicio de sesión
 
 ![Pantalla de inicio de sesión](./capturas/Captura1.png)
 
-### Menú principal y administración de usuarios
+### Menú principal
 
 ![Menú principal del sistema](./capturas/Captura2.png)
