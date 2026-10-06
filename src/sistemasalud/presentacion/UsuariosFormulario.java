@@ -19,6 +19,7 @@ public class UsuariosFormulario extends javax.swing.JFrame {
      */
     public UsuariosFormulario() {
         initComponents();
+        setIconImage(IconoVentana.cargar().getImage());
         
         modelo = (DefaultTableModel) jTable1.getModel();
         crud = UsuarioCRUD.getInstance();

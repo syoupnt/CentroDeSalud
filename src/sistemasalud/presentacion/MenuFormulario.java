@@ -43,6 +43,7 @@ public class MenuFormulario extends JFrame {
         Usuario usuario = login.getUsuario();
 
         setTitle("Centro de Salud Ganimedes");
+        setIconImage(IconoVentana.cargar().getImage());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(900, 600));
         setSize(1180, 760);
@@ -202,6 +203,7 @@ public class MenuFormulario extends JFrame {
         formulario.dispose();
 
         JInternalFrame ventana = new JInternalFrame(titulo, false, true, false, true);
+        ventana.setFrameIcon(IconoVentana.cargarIconoMarco());
         ventana.putClientProperty("modulo", titulo);
         ventana.setContentPane(contenido);
         ventana.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);

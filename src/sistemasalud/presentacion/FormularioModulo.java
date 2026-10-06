@@ -1,38 +1,53 @@
 package sistemasalud.presentacion;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JComponent;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.table.DefaultTableModel;
 import sistemasalud.datos.CitaCRUD;
 import sistemasalud.datos.PacienteCRUD;
 import sistemasalud.datos.PersonalCRUD;
 import sistemasalud.datos.RegistroCRUD;
+import sistemasalud.negocio.CitasValidacion;
 import sistemasalud.negocio.model.Registro;
 
 abstract class FormularioModulo extends JFrame {
@@ -59,6 +74,7 @@ abstract class FormularioModulo extends JFrame {
         idActualizar = camposActualizacion[0];
 
         setTitle("Sistema de Salud " + titulo);
+        setIconImage(IconoVentana.cargar().getImage());
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
 
@@ -175,7 +191,9 @@ abstract class FormularioModulo extends JFrame {
     private void agregarRegistro() {
         try {
             actualizarOpcionesReferencias();
-            crud.addRegistro(new Registro(leerCampos(camposAlta, 0)));
+            String[] valores = leerCampos(camposAlta, 0);
+            validarReferenciasCita(valores);
+            crud.addRegistro(new Registro(valores));
             actualizarTabla();
             limpiarCampos(camposAlta);
         } catch (IOException | IllegalArgumentException ex) {
@@ -197,11 +215,19 @@ abstract class FormularioModulo extends JFrame {
         try {
             actualizarOpcionesReferencias();
             int id = leerId(idActualizar);
-            crud.updateRegistro(id, new Registro(leerCampos(camposActualizacion, 1)));
+            String[] valores = leerCampos(camposActualizacion, 1);
+            validarReferenciasCita(valores);
+            crud.updateRegistro(id, new Registro(valores));
             actualizarTabla();
             limpiarCampos(camposActualizacion);
         } catch (IOException | IllegalArgumentException | IndexOutOfBoundsException ex) {
             mostrarError(ex);
+        }
+    }
+
+    private void validarReferenciasCita(String[] valores) throws IOException {
+        if (crud instanceof CitaCRUD) {
+            CitasValidacion.validarReferencias(valores[0], valores[1]);
         }
     }
 
@@ -313,7 +339,7 @@ abstract class FormularioModulo extends JFrame {
             } else if (etiqueta.equals("Hora")) {
                 componente = crearSelectorHora();
             } else if (etiqueta.equals("Paciente") || etiqueta.equals("Personal médico")) {
-                componente = new JComboBox<Referencia>();
+                componente = new BuscadorReferencia();
             } else {
                 componente = new JTextField();
             }
@@ -330,6 +356,9 @@ abstract class FormularioModulo extends JFrame {
                 String formato = etiqueta.equals("Hora") ? "HH:mm" : "yyyy-MM-dd";
                 return new SimpleDateFormat(formato).format((Date) selector.getValue());
             }
+            if (componente instanceof BuscadorReferencia) {
+                return ((BuscadorReferencia) componente).getTexto();
+            }
             if (componente instanceof JComboBox<?>) {
                 Object seleccionado = ((JComboBox<?>) componente).getSelectedItem();
                 return seleccionado instanceof Referencia
@@ -339,6 +368,10 @@ abstract class FormularioModulo extends JFrame {
         }
 
         private void establecerOpciones(List<Referencia> opciones) {
+            if (componente instanceof BuscadorReferencia) {
+                ((BuscadorReferencia) componente).establecerOpciones(opciones);
+                return;
+            }
             if (!(componente instanceof JComboBox<?>)) {
                 return;
             }
@@ -373,6 +406,8 @@ abstract class FormularioModulo extends JFrame {
                     ahora.set(Calendar.MILLISECOND, 0);
                 }
                 ((JSpinner) componente).setValue(ahora.getTime());
+            } else if (componente instanceof BuscadorReferencia) {
+                ((BuscadorReferencia) componente).limpiar();
             } else if (componente instanceof JComboBox<?>) {
                 ((JComboBox<?>) componente).setSelectedIndex(0);
             } else {
@@ -392,6 +427,178 @@ abstract class FormularioModulo extends JFrame {
                     new Date(), null, null, Calendar.MINUTE));
             selector.setEditor(new JSpinner.DateEditor(selector, "HH:mm"));
             return selector;
+        }
+    }
+
+    private static final class BuscadorReferencia extends JTextField {
+
+        private static final int MAX_SUGERENCIAS = 5;
+
+        private final JPopupMenu menuSugerencias = new JPopupMenu();
+        private final DefaultListModel<String> modeloSugerencias = new DefaultListModel<>();
+        private final JList<String> listaSugerencias = new JList<>(modeloSugerencias);
+        private List<Referencia> opciones = new ArrayList<>();
+
+        private BuscadorReferencia() {
+            setColumns(20);
+            menuSugerencias.setFocusable(false);
+            menuSugerencias.setRequestFocusEnabled(false);
+            listaSugerencias.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            listaSugerencias.setVisibleRowCount(MAX_SUGERENCIAS);
+            listaSugerencias.setFocusable(false);
+            listaSugerencias.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+            listaSugerencias.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent evento) {
+                    if (evento.getClickCount() >= 1) {
+                        seleccionarSugerencia();
+                    }
+                }
+            });
+            JScrollPane contenedor = new JScrollPane(listaSugerencias);
+            contenedor.setBorder(BorderFactory.createEmptyBorder());
+            contenedor.setFocusable(false);
+            menuSugerencias.setBorder(BorderFactory.createLineBorder(new Color(180, 180, 180)));
+            menuSugerencias.add(contenedor);
+
+            getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent evento) {
+                    actualizarSugerencias();
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent evento) {
+                    actualizarSugerencias();
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent evento) {
+                    actualizarSugerencias();
+                }
+            });
+
+            addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent evento) {
+                    if (evento.getKeyCode() == KeyEvent.VK_DOWN && !menuSugerencias.isVisible()) {
+                        actualizarSugerencias();
+                    }
+                    if (evento.getKeyCode() == KeyEvent.VK_DOWN && menuSugerencias.isVisible()) {
+                        int indice = listaSugerencias.getSelectedIndex();
+                        if (indice < listaSugerencias.getModel().getSize() - 1) {
+                            listaSugerencias.setSelectedIndex(indice + 1);
+                        }
+                    } else if (evento.getKeyCode() == KeyEvent.VK_UP && menuSugerencias.isVisible()) {
+                        int indice = listaSugerencias.getSelectedIndex();
+                        if (indice > 0) {
+                            listaSugerencias.setSelectedIndex(indice - 1);
+                        }
+                    } else if (evento.getKeyCode() == KeyEvent.VK_ENTER && menuSugerencias.isVisible()) {
+                        seleccionarSugerencia();
+                    }
+                }
+            });
+        }
+
+        private String getTexto() {
+            return getText();
+        }
+
+        private void establecerOpciones(List<Referencia> nuevasOpciones) {
+            List<Referencia> copia = new ArrayList<>();
+            if (nuevasOpciones != null) {
+                copia.addAll(nuevasOpciones);
+            }
+            opciones = copia;
+            actualizarSugerencias();
+        }
+
+        private void limpiar() {
+            setText("");
+            menuSugerencias.setVisible(false);
+        }
+
+        private void actualizarSugerencias() {
+            String texto = getText() == null ? "" : getText().trim();
+            if (texto.isEmpty()) {
+                menuSugerencias.setVisible(false);
+                return;
+            }
+
+            List<Referencia> coincidencias = new ArrayList<>();
+            String textoNormalizado = normalizar(texto);
+            for (Referencia opcion : opciones) {
+                String valor = opcion.getValor();
+                int prioridad = puntuarCoincidencia(valor, textoNormalizado);
+                if (prioridad > 0) {
+                    coincidencias.add(opcion);
+                }
+            }
+
+            if (coincidencias.isEmpty()) {
+                menuSugerencias.setVisible(false);
+                return;
+            }
+
+            Collections.sort(coincidencias, Comparator.comparingInt((Referencia referencia)
+                    -> puntuarCoincidencia(referencia.getValor(), textoNormalizado)).reversed());
+
+            modeloSugerencias.clear();
+            for (int i = 0; i < Math.min(MAX_SUGERENCIAS, coincidencias.size()); i++) {
+                modeloSugerencias.addElement(coincidencias.get(i).toString());
+            }
+
+            listaSugerencias.setSelectedIndex(0);
+            menuSugerencias.pack();
+            menuSugerencias.show(this, 0, getHeight());
+            requestFocusInWindow();
+        }
+
+        private void seleccionarSugerencia() {
+            if (listaSugerencias.getSelectedIndex() >= 0) {
+                String valorSeleccionado = listaSugerencias.getSelectedValue();
+                for (Referencia opcion : opciones) {
+                    if (opcion.toString().equals(valorSeleccionado)) {
+                        setText(opcion.getValor());
+                        menuSugerencias.setVisible(false);
+                        return;
+                    }
+                }
+            }
+            menuSugerencias.setVisible(false);
+        }
+
+        private static int puntuarCoincidencia(String valor, String textoNormalizado) {
+            if (valor == null || valor.isBlank()) {
+                return 0;
+            }
+            String valorNormalizado = normalizar(valor);
+            if (valorNormalizado.equals(textoNormalizado)) {
+                return 1000;
+            }
+            if (valorNormalizado.startsWith(textoNormalizado)) {
+                return 900;
+            }
+            if (valorNormalizado.contains(textoNormalizado)) {
+                return 800;
+            }
+            String[] palabras = valorNormalizado.split("\\s+");
+            for (String palabra : palabras) {
+                if (palabra.startsWith(textoNormalizado)) {
+                    return 700;
+                }
+            }
+            return 0;
+        }
+
+        private static String normalizar(String valor) {
+            if (valor == null) {
+                return "";
+            }
+            return Normalizer.normalize(valor, Normalizer.Form.NFD)
+                    .replaceAll("\\p{M}", "")
+                    .toLowerCase();
         }
     }
 

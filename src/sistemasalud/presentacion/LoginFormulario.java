@@ -46,6 +46,7 @@ public class LoginFormulario extends javax.swing.JFrame {
 
     private void configurarInterfaz() {
         setTitle("Centro de Salud Ganimedes | Inicio de sesión");
+        setIconImage(IconoVentana.cargar().getImage());
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         JPanel tarjeta = new JPanel(new BorderLayout());
