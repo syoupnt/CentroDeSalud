@@ -2,7 +2,7 @@
 
 Aplicación de escritorio desarrollada con Java y Swing para administrar
 información básica de un centro de salud. Incluye inicio de sesión y módulos
-para gestionar personal médico, pacientes, citas, medicamentos y usuarios.
+para gestionar personal médico, pacientes, citas, medicamentos, recetas y usuarios.
 
 > **Aviso:** es una aplicación de ejemplo con persistencia local en archivos
 de texto. Los nombres de usuario y las contraseñas se almacenan sin cifrar;
@@ -13,11 +13,13 @@ no uses datos personales o clínicos reales en un entorno no protegido.
 - Inicio y cierre de sesión. Tras tres intentos fallidos, el formulario de
   inicio de sesión queda deshabilitado hasta reiniciar la aplicación.
 - Operaciones de alta, consulta, actualización y eliminación de personal,
-  pacientes, citas y medicamentos.
+  pacientes, citas, medicamentos y recetas.
 - Administración de usuarios, disponible al iniciar sesión con la cuenta
   administradora predeterminada.
 - En las citas, selección de pacientes y personal desde listas que se
   actualizan con los registros existentes.
+- En las recetas, selección de paciente, personal médico, cita y medicamento;
+  se comprueba que el paciente y el personal correspondan a la cita elegida.
 
 Los campos de los módulos son:
 
@@ -27,6 +29,7 @@ Los campos de los módulos son:
 | Pacientes | Nombre, fecha de nacimiento, teléfono y dirección |
 | Citas | Paciente, personal médico, fecha, hora y motivo |
 | Medicamentos | Nombre, presentación, existencia e indicaciones |
+| Registro de diagnóstico (Receta) | Paciente, personal médico, cita y medicamento |
 | Usuarios | Nombre y contraseña |
 
 ## Tecnologías y requisitos
@@ -50,8 +53,7 @@ ant run
 ```
 
 - `ant compile` compila las clases en `build/`.
-- `ant test` ejecuta las pruebas definidas en `test/`. Actualmente no hay
-  pruebas automatizadas en esa carpeta.
+- `ant test` ejecuta las pruebas automatizadas definidas en `test/`.
 - `ant jar` genera `dist/SistemaSalud.jar`.
 - `ant run` inicia la aplicación desde Ant.
 
@@ -93,11 +95,18 @@ se crean cuando se necesitan:
 | `pacientes.txt` | Nombre; fecha de nacimiento; teléfono; dirección |
 | `citas.txt` | Paciente; personal médico; fecha; hora; motivo |
 | `medicamentos.txt` | Nombre; presentación; existencia; indicaciones |
+| `recetas.txt` | Paciente; personal médico; referencia de cita; medicamento |
 
 Los campos son obligatorios y no pueden contener punto y coma ni saltos de
 línea. Las fechas se guardan como `AAAA-MM-DD` y las horas como `HH:mm`.
+Los teléfonos de pacientes y personal médico deben contener de 7 a 15 dígitos;
+se permiten el prefijo `+` y separadores como espacios, guiones, puntos y
+paréntesis.
 Paciente y personal médico se eligen de listas en el formulario de citas; la
-cita guarda sus nombres como referencias.
+cita guarda sus nombres como referencias. En el formulario de recetas se
+seleccionan los registros existentes de paciente, personal y medicamento, más
+una cita identificada por su ID y sus datos; el sistema comprueba que la cita
+corresponda al paciente y al personal seleccionados.
 
 El ID que muestran las tablas empieza en `0` y corresponde a la posición del
 registro en el archivo. Al eliminar un registro, las posiciones posteriores

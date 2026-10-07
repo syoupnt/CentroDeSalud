@@ -44,10 +44,14 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableModel;
 import sistemasalud.datos.CitaCRUD;
+import sistemasalud.datos.MedicamentoCRUD;
 import sistemasalud.datos.PacienteCRUD;
 import sistemasalud.datos.PersonalCRUD;
+import sistemasalud.datos.RecetaCRUD;
 import sistemasalud.datos.RegistroCRUD;
 import sistemasalud.negocio.CitasValidacion;
+import sistemasalud.negocio.RecetaValidacion;
+import sistemasalud.negocio.TelefonoValidacion;
 import sistemasalud.negocio.model.Registro;
 
 abstract class FormularioModulo extends JFrame {
@@ -65,7 +69,8 @@ abstract class FormularioModulo extends JFrame {
             RegistroCRUD crud) {
         this.campos = campos.clone();
         this.crud = crud;
-        requiereReferencias = contieneCampo("Paciente") || contieneCampo("Personal médico");
+        requiereReferencias = contieneCampo("Paciente") || contieneCampo("Personal médico")
+                || contieneCampo("Cita") || contieneCampo("Medicamento");
         camposAlta = crearCampos(campos);
         String[] camposConId = new String[campos.length + 1];
         camposConId[0] = "ID";
@@ -137,6 +142,11 @@ abstract class FormularioModulo extends JFrame {
         return false;
     }
 
+    private static boolean esCampoReferencia(String etiqueta) {
+        return etiqueta.equals("Paciente") || etiqueta.equals("Personal médico")
+                || etiqueta.equals("Cita") || etiqueta.equals("Medicamento");
+    }
+
     private JComponent crearControl(CampoEntrada entrada, String etiqueta) {
         JComponent componente = entrada.crearComponente(etiqueta);
         if (componente instanceof JComboBox<?>) {
@@ -192,7 +202,7 @@ abstract class FormularioModulo extends JFrame {
         try {
             actualizarOpcionesReferencias();
             String[] valores = leerCampos(camposAlta, 0);
-            validarReferenciasCita(valores);
+            validarRegistro(valores);
             crud.addRegistro(new Registro(valores));
             actualizarTabla();
             limpiarCampos(camposAlta);
@@ -216,7 +226,7 @@ abstract class FormularioModulo extends JFrame {
             actualizarOpcionesReferencias();
             int id = leerId(idActualizar);
             String[] valores = leerCampos(camposActualizacion, 1);
-            validarReferenciasCita(valores);
+            validarRegistro(valores);
             crud.updateRegistro(id, new Registro(valores));
             actualizarTabla();
             limpiarCampos(camposActualizacion);
@@ -225,9 +235,17 @@ abstract class FormularioModulo extends JFrame {
         }
     }
 
-    private void validarReferenciasCita(String[] valores) throws IOException {
+    private void validarRegistro(String[] valores) throws IOException {
+        for (int i = 0; i < campos.length; i++) {
+            if (campos[i].equals("Teléfono")) {
+                TelefonoValidacion.validar(valores[i]);
+            }
+        }
         if (crud instanceof CitaCRUD) {
             CitasValidacion.validarReferencias(valores[0], valores[1]);
+        } else if (crud instanceof RecetaCRUD) {
+            RecetaValidacion.validarReferencias(
+                    valores[0], valores[1], valores[2], valores[3]);
         }
     }
 
@@ -267,18 +285,40 @@ abstract class FormularioModulo extends JFrame {
         if (!requiereReferencias) {
             return;
         }
-        ArrayList<Referencia> pacientes = cargarReferencias(
-                PacienteCRUD.getInstance().getRegistros(), 0);
-        ArrayList<Referencia> personal = cargarReferencias(
-                PersonalCRUD.getInstance().getRegistros(), 0);
-
-        for (Registro cita : CitaCRUD.getInstance().getRegistros()) {
-            agregarReferenciaAnterior(pacientes, cita.getCampo(0), "Paciente");
-            agregarReferenciaAnterior(personal, cita.getCampo(1), "Personal médico");
+        ArrayList<Registro> citas = CitaCRUD.getInstance().getRegistros();
+        if (contieneCampo("Paciente")) {
+            ArrayList<Referencia> pacientes = cargarReferencias(
+                    PacienteCRUD.getInstance().getRegistros(), 0);
+            for (Registro cita : citas) {
+                agregarReferenciaAnterior(pacientes, cita.getCampo(0), "Paciente");
+            }
+            agregarReferenciasAnteriores(pacientes, "Paciente");
+            establecerOpciones("Paciente", pacientes);
         }
-
-        establecerOpciones("Paciente", pacientes);
-        establecerOpciones("Personal médico", personal);
+        if (contieneCampo("Personal médico")) {
+            ArrayList<Referencia> personal = cargarReferencias(
+                    PersonalCRUD.getInstance().getRegistros(), 0);
+            for (Registro cita : citas) {
+                agregarReferenciaAnterior(personal, cita.getCampo(1), "Personal médico");
+            }
+            agregarReferenciasAnteriores(personal, "Personal médico");
+            establecerOpciones("Personal médico", personal);
+        }
+        if (contieneCampo("Cita")) {
+            ArrayList<Referencia> referenciasCitas = new ArrayList<>(citas.size());
+            for (int i = 0; i < citas.size(); i++) {
+                String valor = RecetaValidacion.crearReferenciaCita(i, citas.get(i));
+                referenciasCitas.add(new Referencia(valor, valor));
+            }
+            agregarReferenciasAnteriores(referenciasCitas, "Cita");
+            establecerOpciones("Cita", referenciasCitas);
+        }
+        if (contieneCampo("Medicamento")) {
+            ArrayList<Referencia> medicamentos = cargarReferencias(
+                    MedicamentoCRUD.getInstance().getRegistros(), 0);
+            agregarReferenciasAnteriores(medicamentos, "Medicamento");
+            establecerOpciones("Medicamento", medicamentos);
+        }
     }
 
     private ArrayList<Referencia> cargarReferencias(
@@ -299,6 +339,23 @@ abstract class FormularioModulo extends JFrame {
             }
         }
         referencias.add(new Referencia(nombre, "No disponible (" + tipo + "): " + nombre));
+    }
+
+    private void agregarReferenciasAnteriores(ArrayList<Referencia> referencias,
+            String etiqueta) throws IOException {
+        for (Registro registro : crud.getRegistros()) {
+            String valor = registro.getCampo(indiceCampo(etiqueta));
+            agregarReferenciaAnterior(referencias, valor, etiqueta);
+        }
+    }
+
+    private int indiceCampo(String etiqueta) {
+        for (int i = 0; i < campos.length; i++) {
+            if (campos[i].equals(etiqueta)) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("El campo no existe: " + etiqueta);
     }
 
     private void establecerOpciones(String etiqueta, List<Referencia> opciones) {
@@ -338,7 +395,7 @@ abstract class FormularioModulo extends JFrame {
                 componente = crearSelectorFecha();
             } else if (etiqueta.equals("Hora")) {
                 componente = crearSelectorHora();
-            } else if (etiqueta.equals("Paciente") || etiqueta.equals("Personal médico")) {
+            } else if (esCampoReferencia(etiqueta)) {
                 componente = new BuscadorReferencia();
             } else {
                 componente = new JTextField();

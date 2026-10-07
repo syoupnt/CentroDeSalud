@@ -126,6 +126,8 @@ public class MenuFormulario extends JFrame {
                 evento -> abrirFormulario("Pacientes", new PacientesFormulario())));
         navegacion.add(crearBotonModulo("Citas", TipoIcono.CITAS,
                 evento -> abrirFormulario("Citas de pacientes", new CitasFormulario())));
+        navegacion.add(crearBotonModulo("Recetas", TipoIcono.RECETAS,
+                evento -> abrirFormulario("Recetas", new RecetasFormulario())));
 
         JButton usuarios = crearBotonModulo("Usuarios", TipoIcono.USUARIOS,
                 evento -> abrirFormulario("Usuarios", new UsuariosFormulario()));
@@ -239,7 +241,7 @@ public class MenuFormulario extends JFrame {
     }
 
     private enum TipoIcono {
-        PERSONAL, MEDICAMENTOS, PACIENTES, CITAS, USUARIOS
+        PERSONAL, MEDICAMENTOS, PACIENTES, CITAS, RECETAS, USUARIOS
     }
 
     private static final class IconoModulo implements Icon {
@@ -287,6 +289,14 @@ public class MenuFormulario extends JFrame {
                     g.rotate(Math.toRadians(-40), 16, 16);
                     g.draw(new RoundRectangle2D.Double(6, 10, 20, 12, 6, 6));
                     g.drawLine(16, 10, 16, 22);
+                    break;
+                case RECETAS:
+                    g.drawRoundRect(7, 3, 18, 26, 2, 2);
+                    g.drawLine(11, 10, 21, 10);
+                    g.drawLine(11, 15, 21, 15);
+                    g.drawLine(11, 20, 15, 20);
+                    g.drawLine(19, 19, 19, 27);
+                    g.drawLine(15, 23, 23, 23);
                     break;
                 default:
                     throw new IllegalStateException("Tipo de icono desconocido: " + tipo);
